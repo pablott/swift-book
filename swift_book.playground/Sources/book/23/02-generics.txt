@@ -1,0 +1,215 @@
+
+//------------ GENERICS 2
+
+// ASSOCIATED TYPES
+
+protocol Container {
+    associatedtype Item
+    mutating func append(_ item: Item)
+    var count: Int { get }
+    subscript(i: Int) -> Item { get }
+}
+
+struct IntStack: Container {
+    var items = [Int]()
+    mutating func push(_ item: Int) {
+        items.append(item)
+    }
+    mutating func pop() -> Int {
+        return items.removeLast()
+    }
+
+    // conformance to protocol
+    typealias Item = Int    // Swift can infer type for Element without this
+    mutating func append(_ item: Int) {
+        self.push(item)
+    }
+    var count: Int {
+        return items.count
+    }
+    subscript(i: Int) -> Int {
+        return items[i]
+    }
+}
+
+// applying Protocol with associatedtype to a Generic Type
+struct Stack<Element>: Container {
+    // original Stack<Element> implementation
+    var items = [Element]()
+    mutating func push(_ item: Element) {
+        items.append(item)
+    }
+    mutating func pop() -> Element {
+        return items.removeLast()
+    }
+
+    // conformance
+    // Item (from protocol) is infered to be Element
+    mutating func append(_ item: Element) {
+        self.push(item)
+    }
+    var count: Int {
+        return items.count
+    }
+    subscript(i: Int) -> Element {
+        return items[i]
+    }
+}
+
+var stack2 = Stack<String>()
+stack2.items = ["aa", "bb"]
+stack2.append("cc")
+stack2.items
+stack2.pop()
+stack2.items
+
+
+// CONFORMING AN EXISTING TYPE TO PROTOCOL
+extension Array: Container {}
+
+
+// ADDING CONSTRAINTS TO AN ASSOCIATED TYPE
+protocol ContainerEquatable {
+    associatedtype Item: Equatable  // <- Constraint
+    mutating func append(_ item: Item)
+    var count: Int { get }
+    subscript(i: Int) -> Item { get }
+}
+
+
+// USING A PROTOCOL IN ITS ASSOCIATED TYPE
+protocol SuffixableContainer: Container {
+    associatedtype Suffix: SuffixableContainer where Suffix.Item == Item
+    func suffix(_ size: Int) -> Suffix
+}
+
+extension Stack: SuffixableContainer {
+    func suffix(_ size: Int) -> Stack {
+        var result = Stack()
+        for index in (count-size)..<count {
+            result.append(self[index])
+        }
+        return result
+    }
+    // Inferred that suffix is Stack
+}
+var stackOfInts = Stack<Int>()
+stackOfInts.append(10)
+stackOfInts.append(20)
+stackOfInts.append(30)
+let suffix = stackOfInts.suffix(2)
+suffix.items
+
+
+extension IntStack: SuffixableContainer {
+    func suffix(_ size: Int) -> Stack<Int> {
+        var result = Stack<Int>()
+        for index in (count-size)..<count {
+            result.append(self[index])
+        }
+        return result
+    }
+    // inferred sufix is Stack<Int>
+}
+
+
+// GENERIC WHERE CLAUSES
+
+func allItemsMatch<C1: Container, C2: Container>(_ someContainer: C1, _ anotherContainer: C2) -> Bool where C1.Item == C2.Item, C1.Item: Equatable {
+    // check that both containers have same length
+    if someContainer.count != anotherContainer.count {
+        return false
+    }
+    // check items by pairs
+    for i in 0..<someContainer.count {
+        if someContainer[i] != anotherContainer[i] {
+            return false
+        }
+    }
+    // all items match, so return true
+    return true
+}
+
+var anotherStackOfStrings = Stack<String>()
+anotherStackOfStrings.push("uno")
+anotherStackOfStrings.push("dos")
+anotherStackOfStrings.push("tres")
+anotherStackOfStrings.items
+
+// Important: array has to conform to Container
+var arrayOfStrings = ["uno", "dos", "tres"]
+arrayOfStrings.count
+
+if allItemsMatch(anotherStackOfStrings, arrayOfStrings) {
+    print("All items match")
+} else {
+    print("Not all items match")
+}
+
+
+// EXTENSIONS WITH GENERIC WHERE CLAUSE
+// on generic type
+extension Stack where Element: Equatable {
+    func isTop(_ item: Element) -> Bool {
+        guard let topItem = items.last else {
+            return false
+        }
+        return topItem == item
+    }
+}
+
+anotherStackOfStrings.isTop("tres")
+
+struct NotEquatable { }
+var notEquatableStack = Stack<NotEquatable>()
+let notEquatableValue = NotEquatable()
+notEquatableStack.push(notEquatableValue)
+//notEquatableStack.isTop(notEquatablevalue)  // Error: isTop not accessable for NonEquatables
+
+// on protocol using generics, to conform to a protocol
+extension Container where Item: Equatable {
+    func startsWith(_ item: Item) -> Bool {
+        return count >= 1 && self[0] == item
+    }
+}
+
+[9, 9, 9].startsWith(42)
+
+// on protocol using generics, to conform with a type
+extension Container where Item == Double {
+    func average() -> Double {
+        var sum = 0.0
+        for index in 0..<count {
+            sum += self[index]
+        }
+        return sum / Double(count)
+    }
+}
+
+[1260.0, 1200.0, 98.6, 37.0].average()
+//[1260.0, 1200.0, 98.6, Int(3)].average()  // will fail
+
+
+// ASSOCIATED TYPES WITH A GENERIC WHERE CLAUSE
+protocol Container2 {
+    associatedtype Item
+    mutating func append(_ item: Item)
+    var count: Int { get }
+    subscript(i: Int) -> Item { get }
+    
+    // make it IteratorProtocol, where IteratorProtocol.Item is same as Item above
+    associatedtype Iterator: IteratorProtocol where Iterator.Element == Item
+    func makeIterator() -> Iterator
+}
+
+
+// GENERIC SUBSCRIPTS
+extension Container {
+    subscript<Indices: Sequence>(indices: Indices) -> [Item] where Indices.Iterator.Element == Int {
+        var result = [Item]()
+            for index in indices {
+                result.append(self[index])
+            }
+            return result
+    }
+}

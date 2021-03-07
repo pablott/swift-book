@@ -1,0 +1,187 @@
+
+//------------ ADVANCED OPERATORS
+
+
+// BITWISE
+
+// NOT
+let initialBits: UInt8 = 0b00001111
+let invertedBits = ~initialBits
+String(invertedBits, radix: 2)
+
+// AND
+let firstSixBits: UInt8 = 0b11111100
+let lastSixBits: UInt8 = 0b00111111
+let middleFourBits = firstSixBits & lastSixBits
+String(middleFourBits, radix: 2)
+
+// OR
+let someBits: UInt8 = 0b10110010
+let moreBits: UInt8 = 0b01011110
+let combinedbits = someBits | moreBits
+String(combinedbits, radix: 2)
+
+// XOR
+let firstBits: UInt8 = 0b00010100
+let otherBits: UInt8 = 0b00000101
+let outputBits = firstBits ^ otherBits
+String(outputBits, radix: 2)
+
+// BITWISE LEFT AND RIGHT OPERATORS
+let shiftBits: UInt8 = 4
+shiftBits << 1
+shiftBits << 2
+shiftBits << 5
+shiftBits << 6
+shiftBits >> 2
+
+// On HEX
+let pink: UInt32 = 0xCC6699
+let redComponent = (pink & 0xFF0000) >> 16      // 0xCC
+let greenComponent = (pink & 0x00FF00) >> 8     // 0x66
+let blueComponent = pink & 0x0000FF             // 0x99
+
+// On signed Ints
+Int8(bitPattern: UInt8(0b00000000))      // 0
+Int8(bitPattern: UInt8(0b11111111))      // 127, represents -1 (2^7 - 1)
+Int8(bitPattern: UInt8(0b11111110))      // 126, represents -2
+Int8(bitPattern: UInt8(0b11111101))      // 125, represents -3
+Int8(bitPattern: UInt8(0b11111100))      // 124, represents -4
+Int8(bitPattern: UInt8(0b11111011))      // 123, represents -5
+
+
+// OVERFLOW OPERATORS
+
+var potentialOverflow = Int16.max
+//potentialOverflow += 1          // overflow error
+
+// Unsigned
+var unsignedOverFlowMax = UInt8.max
+unsignedOverFlowMax = unsignedOverFlowMax &+ 1
+
+var unsignedOverFlowMin = UInt8.min
+unsignedOverFlowMin = unsignedOverFlowMin &- 1
+
+// Signed
+var signedOverFlowMax = Int8.max
+signedOverFlowMax = signedOverFlowMax &+ 1
+
+var signedOverFlowMin = Int8.min
+signedOverFlowMin = signedOverFlowMin &- 1
+
+
+// PRECEDENCE & ASSOCIATIVITY
+
+2 + 3 % 4 * 5
+// %, * > +
+// % left association over *
+
+// Equivalent to:
+2 + ((3 % 4) * 5)
+
+
+// OPERATOR METHODS
+
+struct Vector2D {
+    var x = 0.0, y = 0.0
+}
+
+// Binary infix operator +
+extension Vector2D {
+    static func + (left: Vector2D, right: Vector2D) -> Vector2D {
+        return Vector2D(x: left.x + right.x, y: left.y + right.y)
+    }
+}
+
+let vect1 = Vector2D(x: 3.0, y: 1.0)
+let vect2 = Vector2D(x: 2.0, y: 5.0)
+let vect3 = vect1 + vect2
+vect3.x
+vect3.y
+
+// Unary prefix operator -
+extension Vector2D {
+    static prefix func - (vector: Vector2D) -> Vector2D {
+        return Vector2D(x: -vector.x, y: -vector.y)
+    }
+}
+
+let positiveVector = Vector2D(x: 3.0, y: 4.0)
+let negativeVector = -positiveVector
+negativeVector.x
+negativeVector.y
+
+let alsoPositive = -negativeVector
+alsoPositive.x
+alsoPositive.y
+
+// Compound assignment operator +=
+extension Vector2D {
+    static func += (left: inout Vector2D, right: Vector2D) {
+        left = left + right
+    }
+}
+
+var originalVector = Vector2D(x: 1.0, y: 2.0)
+let vectorToAdd = Vector2D(x: 3.0, y: 4.0)
+originalVector += vectorToAdd
+originalVector.x
+originalVector.y
+
+// Equivalence
+extension Vector2D: Equatable {
+    static func == (left: Vector2D, right: Vector2D) -> Bool {
+        return (left.x == right.x) && (left.y == right.y)
+    }
+}
+
+// Using a synthetic
+//extension Vector2D: Equatable {}
+
+let twoThree = Vector2D(x: 2.0, y: 3.0)
+let anotherTwoThree = Vector2D(x: 2.0, y: 3.0)
+if twoThree == anotherTwoThree {
+    print("These two vectors are euivalent.")
+}
+
+// Using a synthetic equivalence operator
+struct Vector3D: Equatable {
+    var x = 0.0, y = 0.0, z = 0.0
+}
+
+let twoThreeFour = Vector3D(x: 2.0, y: 3.0, z: 4.0)
+let anotherTwoThreeFour = Vector3D(x: 2.0, y: 3.0, z: 4.0)
+if twoThreeFour == anotherTwoThreeFour {
+    print("These two vectors are euivalent.")
+}
+
+
+// CUSTOM OPERATOR
+
+// On unitry operator
+prefix operator +++
+extension Vector2D {
+    static prefix func +++ (vector: inout Vector2D) -> Vector2D {
+        vector += vector
+        return vector
+    }
+}
+
+var toBeDoubled = Vector2D(x: 1.0, y: 4.0)
+let afterDoubling = +++toBeDoubled
+afterDoubling.x
+afterDoubling.y
+
+// On binary operator
+infix operator +-: AdditionPrecedence
+extension Vector2D {
+    static func +- (left: Vector2D, right: Vector2D) -> Vector2D {
+        return Vector2D(x: left.x + right.x, y: left.y - right.y)
+    }
+}
+
+let firstVector = Vector2D(x: 1.0, y: 2.0)
+let secondVector = Vector2D(x: 3.0, y: 4.0)
+let plusMinusVector = firstVector +- secondVector
+plusMinusVector.x
+plusMinusVector.y

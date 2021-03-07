@@ -1,0 +1,159 @@
+
+//------------ EXTENDED STRING DELIMITERS
+
+
+let threeMoreDoubleQuotationMarks = #"""
+Here are three more double quotes: """
+\(myVar)
+"""#
+
+let quotesInString = #" quotes " \(myVar) "#
+
+let interpolated = #" quotes " \#(3 + 5) "#
+
+
+//------------ STRING INITIALIZATION
+
+
+var strInitialized = String()
+type(of: strInitialized)
+strInitialized // initialized
+strInitialized.isEmpty
+
+var str: String
+type(of: str)
+//str // not initialized
+//str.isEmpty
+
+
+//------------ STRING + CHAR
+
+
+let char: Character = "!"
+var greet: String = "Welcome"
+greet.append(char)
+
+
+//------------ UNICODE
+
+
+let eAcute: Character = "\u{E9}" // grapheme cluster = 1 scalar
+var eActureString = String(eAcute)
+eActureString.count
+
+let combinedAcute: Character = "\u{65}\u{301}" // grapheme cluster = 2 scalars
+var combinedAcuteString = String(combinedAcute)
+combinedAcuteString.count
+let enclosedEActure: Character = "\u{E9}\u{20DD}"
+
+let regionalIndicator: Character = "\u{1F1FA}\u{1F1F8}"
+var regionalIndicatorString = String(regionalIndicator)
+regionalIndicatorString.count
+
+
+//------------ STRING INDICES
+
+
+let greeting = "Guten Tag!"
+greeting
+greeting[greeting.startIndex]
+greeting[greeting.index(before: greeting.endIndex)]
+greeting[greeting.index(after: greeting.startIndex)]
+greeting[greeting.index(greeting.startIndex, offsetBy: 7)]
+
+
+//------------ STRING INSERTION/REMOVAL
+
+
+var welcome = "hello"
+welcome.insert("!", at: welcome.endIndex)
+
+welcome.insert(contentsOf: " there", at: welcome.index(before: welcome.endIndex))
+
+
+welcome.remove(at: welcome.index(before: welcome.endIndex))
+welcome
+type(of: welcome)
+
+let range = welcome.index(welcome.endIndex, offsetBy: -6)..<welcome.endIndex
+welcome.removeSubrange(range)
+
+
+
+//------------ SUBSTRING
+
+
+let greeting2 = "Hello, world"
+let index = greeting2.firstIndex(of: ",") ?? greeting.endIndex
+let beginning = greeting2[..<index]
+type(of: beginning)
+let newString = String(beginning)
+
+
+//------------ STRING COMPARISON
+
+
+let quotation = "We're a lot alike, you and I é."
+let sameQuotation = "We're a lot alike, you and I \u{E9}."
+if quotation == sameQuotation {
+    print("same")
+}
+
+
+let romeoAndJuliet = [
+    "Act 1 Scene 1: Verona, A public place",
+    "Act 1 Scene 2: Capulet's mansion",
+    "Act 1 Scene 3: A room in Capulet's mansion",
+    "Act 1 Scene 4: A street outside Capulet's mansion",
+    "Act 1 Scene 5: The Great Hall in Capulet's mansion",
+    "Act 2 Scene 1: Outside Capulet's mansion",
+    "Act 2 Scene 2: Capulet's orchard",
+    "Act 2 Scene 3: Outside Friar Lawrence's cell",
+    "Act 2 Scene 4: A street in Verona",
+    "Act 2 Scene 5: Capulet's mansion",
+    "Act 2 Scene 6: Friar Lawrence's cell"
+]
+
+var act1SceneCount = 0
+for scene in romeoAndJuliet {
+    if scene.hasPrefix("Act 1") {
+        act1SceneCount += 1
+    }
+}
+act1SceneCount
+print("There are \(act1SceneCount) scenes in Act 1")
+
+
+var mansionCount = 0
+var cellCount = 0
+for scene in romeoAndJuliet {
+    if scene.hasSuffix("Capulet's mansion") {
+        mansionCount += 1
+    } else if scene.hasSuffix("Friar Lawrence's cell") {
+        cellCount += 1
+    }
+}
+mansionCount
+cellCount
+
+
+let dogString = "Dog‼🐶"
+dogString.count
+dogString.utf8.count
+for codeUnit in dogString.utf8 {
+    print("\(codeUnit)", terminator: " ") // UInt8
+}
+print("")
+
+dogString.utf16.count
+for codeUnit in dogString.utf16 {
+    print("\(codeUnit)", terminator: " ") // UInt16
+}
+print("")
+
+dogString.unicodeScalars.count
+for scalar in dogString.unicodeScalars {
+    print("\(scalar):\(scalar.value)", terminator: " ") // UInt32
+}
+
+

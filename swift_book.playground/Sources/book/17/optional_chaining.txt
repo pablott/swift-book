@@ -1,0 +1,146 @@
+
+//------------ OPTIONAL CHAINING
+
+
+class Person {
+    var residence: Residence?
+}
+
+class Residence {
+    var numberOfRooms = 1
+}
+
+let john = Person()
+john.residence?.numberOfRooms
+
+if let roomCount = john.residence?.numberOfRooms {
+    roomCount
+} else {
+    print("unable to retieve num of rooms")
+}
+
+// after assigning residence prop
+john.residence = Residence()
+john.residence?.numberOfRooms
+type(of: john.residence?.numberOfRooms)
+
+if let roomCount = john.residence?.numberOfRooms {
+    roomCount
+} else {
+    print("unable to retieve num of rooms")
+}
+
+
+// DEFINIG MODEL CLASSES FOR OPTIONAL CHAINING
+
+// ACCESING PROPS
+class Person2 {
+    var residence: ResidenceFull?
+}
+
+class ResidenceFull {
+    var rooms = [Room]()
+    var numberOfRooms: Int {
+        return rooms.count
+    }
+    subscript(i: Int) -> Room {
+        get {
+            return rooms[i]
+        }
+        set {
+            rooms[i] = newValue
+        }
+    }
+    func printNumberOfRooms() {
+        print("the number of rooms is \(numberOfRooms)")
+    }
+    var address: Address?
+}
+
+class Room {
+    let name: String
+    init(name: String) { self.name = name }
+}
+
+class Address {
+    var buildingName: String?
+    var buildingNumber: String?
+    var street: String?
+    func buildingIdentifier() -> String? {
+        if let buildingNumber = buildingNumber, let street = street {
+            return "\(buildingNumber) \(street)"
+        } else if buildingName != nil {
+            return buildingName
+        } else {
+            return nil
+        }
+    }
+}
+
+// assigning address to residence - method 1
+let someAddress = Address()
+someAddress.buildingNumber = "29"
+someAddress.street = "Acacia Road"
+let peter = Person2()
+//peter.residence = ResidenceFull() // uncomment to get a non-nil .residence?
+peter.residence?.address = someAddress  // fails because residence had no initialized instance of ResidenceFull()
+
+// assigning address to residence - method 2
+func createAddress() -> Address {
+    print("Function was called.")
+
+    let someAddress = Address()
+    someAddress.buildingNumber = "29"
+    someAddress.street = "Acacia Road"
+    
+    return someAddress
+}
+peter.residence?.address = createAddress()
+peter.residence?.address?.buildingIdentifier()
+
+
+// ACCESING METHODS
+type(of: peter.residence?.printNumberOfRooms()) // optional Void
+
+
+// ACCESING SUBSCRIPTS
+if let firstRoomName = peter.residence?[0].name {
+    print("\(firstRoomName)")
+} else {
+    print("unable to retrieve first room.")
+}
+
+//john.residence?[0] = Room(name: "Bathroom")   // .residence? == nil
+
+let petersHouse = ResidenceFull()
+petersHouse.rooms.append(Room(name: "Living Room"))
+petersHouse.rooms.append(Room(name: "Kitchen"))
+peter.residence = petersHouse
+
+peter.residence?[0].name
+
+// optional subscripts on dict/array types
+var testScores = ["Dave": [86, 82, 84], "Bev": [79, 94, 81]]
+testScores["Dave"]?[0] = 91
+testScores["Bev"]?[0] += 1
+testScores["Brian"]?[0] = 72    // [0] does not exists, returns nil and "Brian" is not added
+
+
+// LINKING MULTIPLE LEVELS
+
+// props
+peter.residence?.address?.street
+
+let petersAddress = Address()
+petersAddress.buildingName = "The Larches"
+petersAddress.street = "Laurel Street"
+peter.residence?.address = petersAddress
+peter.residence?.address?.street
+type(of: peter.residence?.address?.street)
+
+// methods
+peter.residence?.address?.buildingIdentifier()
+
+peter.residence?.address?.buildingIdentifier()?.hasPrefix("The")
+peter.residence?.address?.buildingIdentifier()?.hasPrefix("Le")
+

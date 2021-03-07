@@ -1,0 +1,229 @@
+
+//------------ ARC (AUTOMATIC REF COUNTING)
+
+
+ class PersonSimple {
+    let name: String
+    init(name: String) {
+        self.name = name
+//        print("\(name) is being initialized")
+    }
+    deinit {
+//        print("\(name) is being deinit")
+    }
+}
+    
+var ref1: PersonSimple?
+var ref2: PersonSimple?
+var ref3: PersonSimple?
+
+ref1 = PersonSimple(name: "Peter") // strong reference on init
+ref2 = ref1                 // also strong refrerences to ref1
+ref3 = ref1                 // also
+
+ref1 = nil
+ref2 = nil
+ref3 = nil                  // no more string refs after this
+
+
+// STRING REF CYCLES
+
+// THE PROBLEM
+class Person {
+    let name: String
+    init(name: String) { self.name = name }
+    var apartment: Apartment?
+    deinit { print("person \(name) deinit") }
+}
+
+class Apartment {
+    let unit: String
+    init(unit: String) { self.unit = unit }
+    var tenant: Person?
+    deinit { print("Apartment \(unit) is being deinit") }
+}
+
+var john: Person?
+var unit4B: Apartment?
+
+john = Person(name: "John")
+unit4B = Apartment(unit: "4B")
+
+john!.apartment = unit4B
+unit4B!.tenant = john
+
+john = nil
+unit4B = nil
+
+
+// THE SOLUTION
+// 1 - Weak Ref
+class Person2 {
+    let name: String
+    init(name: String) { self.name = name }
+    var apartment: ApartmentWeak?
+    deinit { print("Person \(name) is being deinit") }
+}
+
+class ApartmentWeak {
+    let unit: String
+    init(unit: String) { self.unit = unit}
+    weak var tenant: Person2?
+    deinit { print("Apartment \(unit) is being deinit")}
+}
+
+var robert: Person2?
+var unit4A: ApartmentWeak?
+
+robert = Person2(name: "robert")
+unit4A = ApartmentWeak(unit: "4A")
+
+robert!.apartment = unit4A
+unit4A!.tenant = robert
+
+robert = nil        // delete strong ref to Perosn, weak ref Aprtment->Peson gets deleted too
+unit4A = nil
+
+
+// 2 - Unowned references
+class Customer {        // longest living
+    let name: String
+    var card: CreditCard?
+    init(name: String) {
+        self.name = name
+    }
+    deinit { print("Customer \(name) is being deinit") }
+}
+
+class CreditCard {      // shortest living
+    let number: UInt64
+    unowned let customer: Customer
+    init(number: UInt64, customer: Customer) {
+        self.number = number
+        self.customer = customer
+    }
+    deinit {
+        print("Card #\(number) is being deinit")
+    }
+}
+
+var juan: Customer?
+juan = Customer(name: "Juan")
+juan!.card = CreditCard(number: 1234_5678_9012_3456, customer: juan!)
+
+juan = nil
+
+
+// 3 - Unowned ref and Implicitly Unwrapped optional
+class Country {
+    let name: String
+    var capitalCity: City!
+    init(name: String, capitalName: String) {
+        self.name = name
+        self.capitalCity = City(name: capitalName, country: self)
+    }
+}
+
+class City {
+    let name: String
+    unowned let country: Country
+    init(name: String, country: Country) {
+        self.name = name
+        self.country = country
+    }
+}
+
+var country = Country(name: "Canada", capitalName: "Ottawa")
+country.name
+country.capitalCity.name
+
+
+// STRONG REF CYCLE FOR CLOSURES
+
+// THE PROBLEM
+class HTMLElement {
+    let name: String
+    let text: String?
+    
+    lazy var asHTML: () -> String = {
+        if let text = self.text {
+            return "<\(self.name)>\(text)</\(self.name)>"
+        } else {
+            return "<\(self.name) />"
+        }
+    }
+    
+    init(name: String, text: String? = nil) {
+        self.name = name
+        self.text = text
+    }
+    
+    deinit {
+        print("\(name) is being deinit")
+    }
+}
+
+let heading = HTMLElement(name: "h1")
+let defaultText = "some default text"
+// this redefinition of the closure does not creat a stroncg ref cycle
+heading.asHTML = {
+    return "<\(heading.name)>\(heading.text ?? defaultText)</\(heading.name)>"
+}
+print(heading.asHTML())
+
+
+// this creates a strong cycle beauxe it uses the original asHTML property closure
+var paragraph: HTMLElement? = HTMLElement(name: "p", text: "hello world")
+print(paragraph!.asHTML())
+paragraph = nil     // paragraph is nil but paragraph<-->closure ref still exists
+
+
+// THE SOLUTION
+//lazy var someClosue = {
+//    [unowned self, weak delegate = self.delegate]
+//    (index: Int, stringToProcess: String) -> String in
+//    // closure body
+//}
+//// no params, no return specified
+//lazy var someClosure = {
+//    [unowned self, weak delegate = self.delegate] in
+//    // closure body
+//}
+
+
+class HTMLElementImproved {
+    let name: String
+    let text: String?
+    
+    lazy var asHTML: () -> String = {
+        [unowned self] in
+        if let text = self.text {
+            return "<\(self.name)>\(text)</\(self.name)>"
+        } else {
+            return "<\(self.name) />"
+        }
+    }
+    
+    init(name: String, text: String? = nil) {
+        self.name = name
+        self.text = text
+    }
+    
+    deinit {
+        print("HTMLElementImproved: \(name) is being deinit")
+    }
+}
+
+var anchor: HTMLElementImproved? = HTMLElementImproved(name: "a", text: "hello anchor")
+print(anchor!.asHTML())
+anchor = nil
+
+
+
+
+// Why this does not fail?
+// self stopped referencing the instance, or still refers self (through a25nchor)
+//anchor!.asHTML = {
+//    return "<\(anchor!.name)>\(anchor!.text ?? defaultText)</\(anchor!.name)>"
+//}
+//print(anchor!.asHTML())

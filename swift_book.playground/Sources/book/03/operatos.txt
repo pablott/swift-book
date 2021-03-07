@@ -1,0 +1,50 @@
+(1, "zebra") < (2, "apple")
+(3, "zebra") < (3, "apple")
+("zebra", 3) > ("apple", 4)
+("zebra", 3) > ("zebra", 4)
+
+//("blue", false) < ("purple", true) // can't apply < operator to Bool
+
+var a: String? = "str"
+type(of: a)
+var c = a ?? "default"
+type(of: c)
+
+
+//------------ RANGES
+
+
+let names = ["Anna", "Alex", "Brian", "Jack"]
+
+for name in names[2...] {
+    print(name)
+}
+print("\n")
+for name in names[...2] {
+    print(name)
+}
+print("\n")
+for name in names[..<2] {
+    print(name)
+}
+
+
+let range = ...5
+range.contains(-100)
+range.contains(5)
+range.contains(6)
+
+
+//------------ LOGICAL OPERATORS
+
+
+let enteredDoorCode = true
+let passedRetinaScan = false
+let hasDoorKey = false
+let knowsOverridePassword = true
+
+if enteredDoorCode && passedRetinaScan || hasDoorKey || knowsOverridePassword {
+    print("Welcome!")
+} else {
+    print ("Access denied")
+}

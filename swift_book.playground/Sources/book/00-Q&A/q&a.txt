@@ -1,0 +1,188 @@
+
+// p. 332
+/*
+ “Because it provides a default value for all of the properties it introduces and does not define any initializers itself, ShoppingListItem automatically inherits all of the designated and convenience initializers from its superclass.”
+ */
+
+// Step1/ Step2 does not say anything about default values for props. Just based on either not overriding designated (and inherit both design. and conv. inits) or overriding inits designated.
+// A: the important part is designate/convenince relationaship, and initializaing properly
+
+
+// p. 370
+//Converting Errors to Optional Values
+//struct Data {}
+//func fetchDataFromDisk() throws {}
+//func fetchData() -> Data? {
+//    if let data = try? fetchDataFromDisk() { return data }
+//    if let data = try? fetchDataFromServer() { return data }
+//    return nil
+//}
+// does this make ‘data’ an optional or it is similar to optional binding? Return type indicates Data? So it seems to be an optional
+// A: it is the same as optional binfing so data is NOT optional. However the functionr returns Data? because there is the possibility of nil.
+
+
+// p. 426
+//for object in objects {
+//    if let objectWithArea = object as? HasArea {
+//        print("Area is \(objectWithArea.area)")
+//    } else {
+//        print("Something that doesn't have an area")
+//    }
+//}
+// why is not possible to access .area with is HasArea? This indicates it requires protocol conformance but obectWithArea already has the .area method
+// A: On previous page array is defined as [AnyObject]. This affects how the object being passed is accesed even for instances that alrady have .area() method
+
+
+
+// p. 434
+/*
+ Because arrays conform to Collection and integers conform to Equatable, equalNumbers and differentNumbers can use the allEqual() method:
+*/
+// dict is a Collection type, but is it Equatable?
+Dict is Hashable but Equatable (beacuse it is unordered). Equatable implies same values in same order
+
+
+
+// p. 455
+// USING A PROTOCOL IN ITS ASSOCIATED TYPE
+protocol Container {
+    associatedtype Item
+    mutating func append(_ item: Item)
+    var count: Int { get }
+    subscript(i: Int) -> Item { get }
+}
+
+struct Stack<Element>: Container {
+    // Stack<Element> implementation
+    var items = [Element]()
+    mutating func push(_ item: Element) {
+        items.append(item)
+    }
+    mutating func pop() -> Element {
+        return items.removeLast()
+    }
+
+    // conformance
+    // Item (from protocol) is infered to be Element
+    mutating func append(_ item: Element) {
+        self.push(item)
+    }
+    var count: Int {
+        return items.count
+    }
+    subscript(i: Int) -> Element {
+        return items[i]
+    }
+}
+
+struct IntStack: Container {
+    var items = [Int]()
+    mutating func push(_ item: Int) {
+        items.append(item)
+    }
+    mutating func pop() -> Int {
+        return items.removeLast()
+    }
+
+    // conformance to protocol
+    typealias Item = Int    // Swift can infer type for Element without this
+    mutating func append(_ item: Int) {
+        self.push(item)
+    }
+    var count: Int {
+        return items.count
+    }
+    subscript(i: Int) -> Int {
+        return items[i]
+    }
+}
+
+protocol SuffixableContainer: Container {
+    associatedtype Suffix: SuffixableContainer where Suffix.Item == Item
+    func suffix(_ size: Int) -> Suffix
+}
+
+
+var stackOfInts = Stack<Int>()
+stackOfInts.append(10)
+stackOfInts.append(20)
+stackOfInts.append(30)
+let suffix = stackOfInts.suffix(2)
+suffix.items
+
+extension Stack: SuffixableContainer {
+    func suffix(_ size: Int) -> Stack {
+        var result = Stack()
+        for index in (count-size)..<count {
+            result.append(self[index])
+        }
+        return result
+    }
+    // Inferred that suffix is Stack
+}
+
+extension IntStack: SuffixableContainer {
+    func suffix(_ size: Int) -> Stack<Int> {
+        var result = Stack<Int>()
+        for index in (count-size)..<count {
+            result.append(self[index])
+        }
+        return result
+    }
+    // inferred sufix is Stack<Int>
+}
+// A: Suffix.Item == Item implies suffix() will return same type as the type that has SuffixableContainer protocol applied to.
+
+
+
+// p. 464
+/*
+ extension Container {
+     subscript<Indices: Sequence>(indices: Indices) -> [Item]
+         where Indices.Iterator.Element == Int {
+             var result = [Item]()
+             for index in indices {
+                 result.append(self[index])
+             }
+             return result
+     }
+ }
+ */
+
+//but we defined ‘subscript(i: Int) -> Item { get }’ before, which is Int -> Item, not Sequence->[Item]
+// A: both state different arguments and function types for same method. This is allowed for Protocols and does not mean a conflict.
+
+
+
+// p. 474
+/*
+ However, a value of a protocol type doesn’t conform to that protocol; the value returned by protoFlip(_:) doesn’t conform to Shape.
+ */
+// My interpretation: a value of a protocol type is not the same as type conforming to said protocol
+
+//func protoFlip<T: Shape>(_ shape: T) -> Shape {
+//    if shape is Square {
+//        return shape
+//    }
+//
+//    return FlippedShape(shape: shape)
+//}
+// Shape does not keep the type so the comparison of a protocol conforming type and a function that enforces a return conformant to a particular ptotocol are not the same.
+
+
+
+// p. 537
+/*
+ you can add -1 to -4, simply by performing a standard binary addition of all eight bits (including the sign bit), and discarding anything that doesn’t fit in the eight bits once you’re done
+ */
+// where is the last 011 coming from? 1 & 1 should be 1
+
+// On signed Ints
+Int8(bitPattern: UInt8(0b00000000))      // 0
+Int8(bitPattern: UInt8(0b11111111))      // 127, represents -1 (2^7 - 1)
+Int8(bitPattern: UInt8(0b11111110))      // 126, represents -2
+Int8(bitPattern: UInt8(0b11111101))      // 125, represents -3
+Int8(bitPattern: UInt8(0b11111100))      // 124, represents -4
+Int8(bitPattern: UInt8(0b11111011))      // 123, represents -5
+
+// A: not clear why 1&1 returns 0

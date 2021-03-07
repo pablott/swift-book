@@ -1,0 +1,107 @@
+enum Rank: Int, CaseIterable {
+    case ace = 1 // if empty it will start enum at 0
+    case two, three, four, five, six, seven, eight, nine, ten
+    case jack, queen, king
+    
+    func simpleDescription() -> String {
+        switch self {
+        case .ace:
+            return "ace switch"
+        case .jack:
+            return "jack switch"
+        case .queen:
+            return "queen switch"
+        case .king:
+            return "king switch"
+        default:
+            return String(self.rawValue)
+        }
+    }
+}
+
+let jack = Rank.jack
+let aceRaw = jack.rawValue
+jack.simpleDescription()
+
+let rawRank = Rank(rawValue: 2)
+rawRank?.simpleDescription()
+
+
+enum Suit: CaseIterable {
+    case spades, hearts, diamonds, clubs
+    
+    func simpleDescription() -> String {
+        switch self {
+        case .spades:
+            return "spades"
+        case .hearts:
+            return "hearts"
+        case .diamonds:
+            return "diamonds"
+        case .clubs:
+            return "clubs"
+        }
+    }
+    
+    func color() -> String {
+        switch self {
+        case .spades, .clubs:
+            return "black"
+        case .hearts, .diamonds:
+            return "red"
+        }
+    }
+}
+
+let hearts = Suit.hearts
+//let heartsRaw = hearts.rawValue
+hearts.simpleDescription()
+hearts.color()
+
+
+
+enum ServerResponse {
+    case result(String, String)
+    case failure(String)
+    case ignore(String)
+}
+
+let success = ServerResponse.result("6:00 am", "8:09 pm")
+let failure = ServerResponse.failure("Out of cheese")
+let ignore = ServerResponse.ignore("Not needed")
+
+switch success {
+case let .result(sunrise, sunset):
+    print("Sun rises at \(sunrise), sets at \(sunset)")
+case let .failure(message):
+    print("Failure: \(message)")
+case let .ignore(reason):
+    print("This request will be ignored: \(reason)")
+}
+
+
+
+struct Card {
+    var rank: Rank
+    var suit: Suit
+    
+    func simpleDescription() -> String {
+        return "The \(rank.simpleDescription()) of \(suit.simpleDescription()), \(suit.color()) color."
+    }
+}
+let threeOfSpades = Card( rank: .three, suit: .spades)
+threeOfSpades.simpleDescription()
+
+
+func createDeck() -> [Card] {
+    var deck: [Card] = []
+    
+    for rank in Rank.allCases {
+        for suit in Suit.allCases {
+            deck += [Card(rank: rank, suit: suit)]
+        }
+    }
+    return deck
+}
+
+print(createDeck().count)

@@ -1,0 +1,155 @@
+//------------ CLOSURES
+
+
+let names = ["Chris", "Alex", "Ewa", "Barry", "Daniella"]
+
+func backward(_ s1: String, _ s2: String) -> Bool {
+    print(s1, s2 , "\t\(s1 > s2)")
+    return s1 > s2
+}
+
+var reversedNames = names.sorted(by: backward)
+
+
+// SHORT VERSIONS
+// Closure
+var reversedNames2 = names.sorted(by: { (s1: String, s2: String) -> Bool in
+    return s1 > s2
+})
+
+// One line, implicit function type
+var reversedNames3 = names.sorted(by: { s1, s2 in return s1 > s2 })
+reversedNames3
+
+// Same as before, implicit return
+var reversedNames4 = names.sorted(by: { s1, s2 in s1 > s2 })
+reversedNames4
+
+// shorthand args names
+var reversedNames5 = names.sorted(by: { $0 > $1 })
+reversedNames5
+
+// operator method
+var reversedNames6 = names.sorted(by: >)
+
+
+// TRAILING CLOSURES
+
+var reversedNames7 = names.sorted() { $0 > $1 }
+reversedNames7
+
+// even shorter!!
+var reversedNames8 = names.sorted { $0 > $1 }
+reversedNames8
+
+// using trailing closure in multiple lines
+let digitNames = [
+    0: "Zero", 1: "One", 2: "Two", 3: "Three", 4: "Four",
+    5: "Five", 6: "Six", 7: "Seven", 8: "Eight", 9: "Nine"
+]
+let numbers = [16, 58, 510]
+
+let strings = numbers.map { (number) -> String in
+    var number = number
+    var output = ""
+    repeat {
+        output = digitNames[number % 10]! + output
+        print("\(output) \t\t\(number)/\(number % 10) \t (\(Double(number)/10))")
+        number /= 10
+    } while number > 0
+    return output
+}
+strings
+
+
+// CAPTURING VALUES
+
+func makeIncrementer(forIncrementer amount: Int) -> () -> Int {
+    var runningTotal = 0
+    func incrementer() -> Int {
+        runningTotal += amount
+        return runningTotal
+    }
+    return incrementer
+}
+
+let incrementByTen = makeIncrementer(forIncrementer: 10) // define incrementer with amunt 10
+incrementByTen() // execute incrementer
+incrementByTen() // again
+incrementByTen() // and again
+
+let incrementBySeven = makeIncrementer(forIncrementer: 7) // new incrementer, with separate context
+incrementBySeven()
+incrementBySeven()
+incrementBySeven()
+
+let alsoIncrementByTen = incrementByTen // asigned to incrementByTen defined before
+alsoIncrementByTen() // calls incrementByTen
+
+
+// ESCAPING
+
+var completionHandlers: [() -> Void] = []
+func someFunctionWithEscapingClosure(completionHandler: @escaping () -> Void) {
+    completionHandlers.append(completionHandler) // this one stores the closure for later execution (captures SomeClass instance context)
+}
+
+func someFunctionWithNoEscapingClosure(closure: () -> Void) {
+    closure() // this one executes the passed closure (captures SomeClass instance context)
+}
+
+class SomeClass {
+    var x = 10
+    func doSomething() { // when doSomething() is called from the instance...
+        someFunctionWithEscapingClosure { self.x = 100 } // deferred execution, exec when completionHandlers.first?() is called
+        someFunctionWithNoEscapingClosure { x = 200 } // immediate execution
+    }
+}
+
+let instance = SomeClass()
+instance.x
+
+instance.doSomething()
+instance.x
+
+completionHandlers.first?()
+instance.x
+
+
+// AUTOCLOSURES
+
+var customersInLine = ["Chris", "Alex", "Ewa", "Barry", "Daniella"]
+customersInLine.count
+
+let customerProvider = { customersInLine.remove(at: 0) } // () -> String
+customersInLine
+customerProvider()
+customersInLine
+
+// Same behaviour with closure
+func serve(customer customerProvider: () -> String) {
+    print("Now serving \(customerProvider())!")
+}
+serve(customer: { customersInLine.remove(at: 0) } )
+customersInLine
+
+// Same behaviour with autoclosure
+func serveAutoclosure(customer customerProvider: @autoclosure () -> String) {
+    print("Now serving \(customerProvider())!")
+}
+serveAutoclosure(customer: customersInLine.remove(at: 0))
+customersInLine
+
+// @autoclosure + @escaping
+var customerProviders: [() -> String] = []
+func collectCustomerProviders(_ customerProvider: @autoclosure @escaping () -> String) {
+    customerProviders.append(customerProvider)
+}
+collectCustomerProviders(customersInLine.remove(at: 0))
+collectCustomerProviders(customersInLine.remove(at: 0))
+print("Collected \(customerProviders.count) closures.")
+
+for customerProvider in customerProviders {
+    print("Now serving \(customerProvider())!")
+}
+

@@ -1,0 +1,59 @@
+//------------ CONTROL TRANSFER STATEMENTS
+
+// LABELED STATEMENTS
+let finalSquare = 25
+var board = [Int](repeating: 0, count: finalSquare + 1)
+board.count
+
+board[03] = +08; board[06] = +11; board[09] = +09; board[10] = +02
+board[14] = -10; board[19] = -11; board[22] = -02; board[24] = -08
+var square = 0
+var diceRoll = 0
+
+gameLoop: while square != finalSquare {
+    diceRoll += 1
+    if diceRoll == 7 { diceRoll = 1 }
+    switch square + diceRoll {
+    case finalSquare:
+        //final square, game over
+        break gameLoop
+    case let newSquare where newSquare > finalSquare:
+        // over last square, roll again
+        print("dice: \(diceRoll) \t overshot \(square+diceRoll)")
+        continue gameLoop
+    default:
+        // this is a valid movement
+        square += diceRoll
+        square += board[square]
+    }
+    print("dice: \(diceRoll) \t \(square)")
+}
+print("Game Over!")
+
+
+// EARLY EXIT -- GUARD LET
+func greet(person: [String: String]) {
+    guard let name = person["name"] else {
+        return
+    }
+    
+    print("Hello \(name)")
+    
+    guard let location = person["location"] else {
+        print("I hope the weather is nice near you.")
+        return
+    }
+    
+    print("I hope the weather is nice \(location)")
+}
+
+greet(person: ["name": "John"])
+greet(person: ["name": "Jane", "location": "Cupertino"])
+
+
+// CHECKING API AVAILIBILITY
+if #available(macOS 10, *) {
+    print("macOS")
+} else {
+    print("not macOS")
+}

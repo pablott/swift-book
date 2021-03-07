@@ -1,0 +1,140 @@
+
+//------------ GENERICS 1
+
+// THE PROBLEM:
+// Different types, same body
+func swapTwoInts(_ a: inout Int, _ b: inout Int) {
+    let temporaryA = a
+    a = b
+    b = temporaryA
+}
+
+var someInt = 3
+var anotherInt = 107
+swapTwoInts(&someInt, &anotherInt)
+someInt
+anotherInt
+    
+func swapTwoStrings(_ a: inout String, _ b: inout String) {
+    let temporaryA = a
+    a = b
+    b = temporaryA
+}
+
+func swapTwoDoubles(_ a: inout Double, _ b: inout Double) {
+    let temporaryA = a
+    a = b
+    b = temporaryA
+}
+
+
+// THE SOLUTION
+// Generic functions
+func swapTwoValues<T>(_ a: inout T, _ b: inout T) {
+    let temporaryA = a
+    a = b
+    b = temporaryA
+}
+
+someInt
+anotherInt
+swapTwoValues(&someInt, &anotherInt)
+someInt
+anotherInt
+
+var someString = "hello"
+var anotherString = "world"
+swapTwoValues(&someString, &anotherString)
+someString
+anotherString
+
+
+// GENERIC TYPES
+
+// nongeneric function (LIFO array)
+struct IntStackNonGeneric {
+    var items = [Int]()
+    mutating func push(_ item: Int) {
+        items.append(item)
+    }
+    mutating func pop() -> Int {
+        return items.removeLast()
+    }
+}
+
+// generic counterpart (LIFO array)
+struct Stack<Element> {
+    var items = [Element]()
+    mutating func push(_ item: Element) {
+        items.append(item)
+    }
+    mutating func pop() -> Element {
+        return items.removeLast()
+    }
+}
+
+var stackOfStrings = Stack<String>()
+// pushing
+stackOfStrings.items
+stackOfStrings.push("uno")
+stackOfStrings.items
+stackOfStrings.push("dos")
+stackOfStrings.items
+stackOfStrings.push("tres")
+stackOfStrings.items
+stackOfStrings.push("cuatro")
+stackOfStrings.items
+// popping last-in, first-out
+stackOfStrings.pop()
+stackOfStrings.items
+//stackOfStrings.pop()
+//stackOfStrings.items
+//stackOfStrings.pop()
+//stackOfStrings.items
+//stackOfStrings.pop()
+//stackOfStrings.items
+
+
+// EXTENDING A GENERIC TYPE
+extension Stack {
+    var topItem: Element? {
+        return items.isEmpty ? nil : items[items.count - 1]
+    }
+}
+
+if let topItem = stackOfStrings.topItem {
+    print(topItem)
+}
+
+
+// TYPE CONSTRAINTS
+
+//non-generic implementation
+func findIndex(ofString valueToFind: String, in array: [String]) -> Int? {
+    for (index, value) in array.enumerated() {
+        if value == valueToFind {
+            return index
+        }
+    }
+    return nil
+}
+
+let strings = ["cat", "dog", "llama", "parakeet", "terrapin"]
+if let foundIndex = findIndex(ofString: "llama", in: strings) {
+    print("The index of llama is \(foundIndex)")
+}
+
+// generic implementation
+func findIndex<T: Equatable>(of valueToFind: T, in array:[T]) -> Int? {
+    for (index, value) in array.enumerated() {
+        if value == valueToFind {   // requires Equatable protocol
+            return index
+        }
+    }
+    return nil
+}
+
+let doubleIndex = findIndex(of: 9.3, in: [3.14159, 0.1, 0.25] )
+type(of: doubleIndex)
+let stringIndex = findIndex(of: "Andrea", in: ["Mike", "Malcolm", "Andrea"])
+type(of: stringIndex)

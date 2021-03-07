@@ -1,0 +1,68 @@
+//------------ STRUCTS & CLASSES
+
+
+struct Resolution {
+    var width = 0
+    var height = 0
+}
+
+class VideoMode {
+    var resolution = Resolution()
+    var interlaced = false
+    var frameRate = 0.0
+    var name: String?
+}
+
+let someResolution = Resolution()
+let someVideoMode = VideoMode()
+someVideoMode.resolution.width
+//someResolution.width = 100 // will throw erro because is const
+
+someResolution.width
+someVideoMode.resolution.width = 12800
+someVideoMode.resolution.width
+
+let vga = Resolution(width: 640, height: 480)
+
+
+// PASS BY COPY VS PASS BY REFERENCE
+
+// Pass by-copy (value type)
+let hd = Resolution(width: 1920, height: 1080)
+var cinema = hd // copy
+cinema.width = 2048
+cinema.width
+hd.width
+
+// Pass by copy for enums
+enum CompassPoint {
+    case north, south, east, west
+    mutating func turnNorth() {
+        self = .north
+    }
+}
+var currentDirection = CompassPoint.west
+let rememberedDirection = currentDirection  // copy
+currentDirection.turnNorth()
+
+currentDirection
+rememberedDirection
+
+// Pass by ref
+let tenEighty = VideoMode()
+tenEighty.resolution = hd
+tenEighty.interlaced = true
+tenEighty.name = "1080i"
+tenEighty.frameRate = 25.0
+
+let alsoTenEighty = tenEighty
+alsoTenEighty.frameRate = 30.0
+alsoTenEighty.frameRate == tenEighty.frameRate
+
+
+// IDENTITY OPERATORS
+
+tenEighty === alsoTenEighty
+
+let notTenEighty = VideoMode()
+tenEighty !== notTenEighty

@@ -1,0 +1,143 @@
+
+//------------ ACCESS CONTROL
+
+
+// SYNTAX
+
+public class SomePublicClass {}
+internal class SomeInternalClass {}     // internal is default so it be removed
+fileprivate class SomeFilePrivateClass {}
+private class SomePrivateClass {}
+
+public var somePublicVariable = 0
+internal let someInternalConstant = 0   // internal is default so it be removed
+fileprivate func someFilePrivateFunction() {}
+private func somePrivateFunction() {}
+
+
+// MEMBER'S LEVEL
+
+public class SomePublicType {           // explicit public
+    public var somePublicProperty = 0       // explicit public
+    var someInternalProperty = 0            // implicit internal
+}
+
+class SomeInternalType {                // implicit internal
+    var someInternalProp = 0                // implicit internal
+    private var somePrivateProp = 0         // explicit private
+}
+
+fileprivate class SomeFilePrivateType { // explicit fileprivate
+    func someFilePrivateMethod() {}          // implicit fileprivate
+    private func somePrivateMethod() {}      // implicit private
+}
+
+private class SomePrivateType {         // explicit private
+    var somePrivateProp = 0                 // implicit private
+}
+
+
+// TUPLE TYPES
+// more restricted level of every item
+
+// FUNCTION TYPES
+// Error, level mismatch, lowest is private
+//func someFunction() -> (SomeInternalClass, SomePrivateClass) {
+//    // body
+//}
+
+// Solution
+// make level explicit
+//private func someFunctionFixed() -> (SomeInternalClass, SomePrivateClass) {
+//    // body
+//}
+
+
+// ENUMERATION TYPES
+public enum CompassPoint: Int {
+    case north      // implicitly public
+    case south
+    case east
+    case west
+}
+
+
+// NESTED TYPES
+// Similar to classes.
+// Same as container
+// Unless public, then get private
+// Which can be forces as explicitly public
+
+
+// SUBCLASSING
+
+public class A {
+    fileprivate func someMethod() {}
+}
+
+internal class B: A {
+    override internal func someMethod() {}
+}
+
+public class C {
+    fileprivate func someMethod() {}
+}
+
+internal class D: C {
+    override internal func someMethod() {
+        super.someMethod()
+    }
+}
+
+
+// CONSTANTS, VARIABLES, PROPS, SUBSCRIPTS
+
+private var privateInstance = SomePrivateClass()
+
+
+// GETTERS & SETTERS
+struct TrackedString {
+    private(set) var numberOfEdits = 0  // setter is private, rest is default internal
+    var value: String = "" {
+        didSet {
+            numberOfEdits += 1
+        }
+    }
+}
+
+var stringToEdit = TrackedString()
+stringToEdit.value = "This string will be tracked"
+stringToEdit.value += " This edit will increment numberOfEdits"
+stringToEdit.value += " So will this one."
+stringToEdit.numberOfEdits
+//stringToEdit.numberOfEdits = 10 // Error: setter is not accessible
+
+// public getter, private setter
+public struct TrackedStringPublic {
+    public private(set) var numberOfEdits = 0
+    public var value: String = "" {
+        didSet {
+            numberOfEdits += 1
+        }
+    }
+    public init() {}
+}
+
+
+// INITIALIZERS
+// p. 533
+
+
+// PROTOCOLS
+// p. 534
+
+
+// EXTENSIONS
+// p. 535
+
+
+// GENERICS
+// p. 537
+
+// TYPE ALIASES
+// p. 537

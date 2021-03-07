@@ -1,0 +1,360 @@
+//------------ PROPERTIES
+
+
+struct FixedLengthRange {
+    var firstValue: Int
+    let length: Int
+}
+
+var rangeOfThreeItems = FixedLengthRange(firstValue: 0, length: 3)
+rangeOfThreeItems.firstValue = 6
+rangeOfThreeItems
+
+
+let rangeOfFourItems = FixedLengthRange(firstValue: 0, length: 4)
+//rangeOfFourItems.firstValue = 6 // error
+
+
+// LAZY PROPS (VAR)
+
+class DataImporter {
+    var filename = "data.txt"
+}
+
+class DataManager {
+    lazy var importer = DataImporter()
+    var data = [String]()
+}
+
+let manager = DataManager()
+manager.data.append("Some data")
+manager.data.append("Some more data")
+
+manager.importer.filename
+
+
+// COMPUTED PROPS
+
+struct Point {
+    var x = 0.0, y = 0.0
+}
+struct Size {
+    var width = 0.0, height = 0.0
+}
+struct Rect {
+    var origin = Point()
+    var size = Size()
+    var center: Point {
+        get {
+            let centerX = origin.x + (size.width / 2)
+            let centerY = origin.y + (size.height / 2)
+            return Point(x: centerX, y: centerY)
+        }
+        set(newCenter) {
+            origin.x = newCenter.x - (size.width / 2)
+            origin.y = newCenter.y - (size.width / 2)
+        }
+    }
+}
+
+var square = Rect(origin: Point(x: 0.0, y: 0.0), size: Size(width: 10.0, height: 10.0))
+let initialSquareCenter = square.center
+initialSquareCenter.x
+initialSquareCenter.y
+square.center = Point(x: 15.0, y: 15.0)
+square.origin.x
+square.origin.y
+
+// Shorthand getter/setters
+struct CompactRect {
+    var origin = Point()
+    var size = Size()
+    var center: Point {
+        get {
+            Point(x: origin.x + (size.width / 2), y: origin.y + (size.height))
+        }
+        set {
+            origin.x = newValue.x - (size.width / 2)
+            origin.y = newValue.y - (size.width / 2)
+        }
+    }
+}
+
+// Read-only computed prop
+struct Cuboid {
+    var width = 0.0, height = 0.0, depth = 0.0
+    var volume: Double {
+        return width * height * depth
+    }
+}
+let fourByFiveByTwo = Cuboid(width: 4.0, height: 5.0, depth: 2.0)
+fourByFiveByTwo.volume
+
+
+// OBSERVERS
+
+class StepCounter {
+    var totalSteps: Int = 0 {
+        willSet(newTotalSteps) {
+            print("about to set totalSteps from \(totalSteps) to \(newTotalSteps)")
+        }
+        didSet {
+            if totalSteps > oldValue {
+                print("Added \(totalSteps - oldValue) to \(oldValue)")
+            }
+        }
+    }
+}
+let stepCounter = StepCounter()
+stepCounter.totalSteps = 200
+stepCounter.totalSteps = 360
+stepCounter.totalSteps = 896
+
+
+// PROP WRAPPERS
+
+@propertyWrapper
+struct TwelveOrLess {
+    private var number: Int
+    init() { self.number = 0 }
+    var wrappedValue: Int {
+        get { return number }
+        set { number = min(newValue, 12) }
+    }
+}
+
+struct SmallRectangle {
+    @TwelveOrLess var height: Int
+    @TwelveOrLess var width: Int
+}
+
+var rectangle = SmallRectangle()
+//rectangle.height
+rectangle.height = 10
+//rectangle.height
+rectangle.height = 20
+//rectangle.height
+
+// Wrapper without using @TwelveOrLess
+struct SmallRectangle2 {
+    private var _height = TwelveOrLess()
+    private var _width = TwelveOrLess()
+    var height: Int {
+        get { return _height.wrappedValue }
+        set { _height.wrappedValue = newValue }
+    }
+    var width: Int {
+        get { return _width.wrappedValue }
+        set { _width.wrappedValue = newValue }
+    }
+}
+
+var rectangle2 = SmallRectangle()
+rectangle2.height
+rectangle2.height = 10
+rectangle2.height
+rectangle2.height = 20
+rectangle2.height
+
+
+// INITIALIZER
+@propertyWrapper
+struct SmallNumber {
+    private var maximum: Int
+    private var number: Int
+    
+    var wrappedValue: Int {
+        get { return number }
+        set { number = min(newValue, maximum) }
+    }
+    
+    init() {
+//        print("")
+        maximum = 12
+        number = 0
+    }
+    init(wrappedValue: Int) {
+//        wrappedValue
+        maximum = 12
+        number = min(wrappedValue, maximum)
+    }
+    init(wrappedValue: Int, maximum: Int) {
+        wrappedValue
+        maximum
+        self.maximum = maximum
+        number = min(wrappedValue, maximum)
+    }
+}
+
+// no initial values
+struct ZeroRectangle {
+    @SmallNumber var height: Int
+    @SmallNumber var width: Int
+}
+
+var zeroRectangle = ZeroRectangle()
+print(zeroRectangle.height, zeroRectangle.width)
+
+// Passing init values
+struct UnitRectangle {
+    @SmallNumber var height: Int = 1 // gets sent to init(wrappedValue: Int)
+    @SmallNumber var width: Int = 1 // gets sent to init(wrappedValue: Int)
+}
+var unitRectangle = UnitRectangle()
+print(unitRectangle.height, unitRectangle.width)
+
+// Passing arguments
+struct NarrowRectangle {
+    @SmallNumber(wrappedValue: 2, maximum: 3) var height: Int
+    @SmallNumber(wrappedValue: 3, maximum: 4) var width: Int
+}
+
+var narrowRectangle = NarrowRectangle()
+print(narrowRectangle.height, narrowRectangle.width)
+
+// Mixture of args and init values
+struct MixedRectangle {
+    @SmallNumber var height: Int = 1    // init(wrappedValue:)
+    @SmallNumber(maximum: 9) var width: Int = 2 // init(wrappedValue:, maximum:)
+}
+
+var mixedRectangle = MixedRectangle()
+mixedRectangle.height
+mixedRectangle.height = 20
+mixedRectangle.height
+
+
+// PROJECTING FROM A WRAPPER
+@propertyWrapper
+struct SmallNumber2 {
+    private var number: Int
+    var projectedValue: Bool    // exposed by $
+    init() {
+        self.number = 0
+        self.projectedValue = false
+    }
+    
+    var wrappedValue: Int {
+        get { return number }
+        set {
+            if newValue > 12 {
+                number = 12
+                projectedValue = true
+            } else {
+                number = newValue
+                projectedValue = false
+            }
+        }
+    }
+}
+struct SomeStructure {
+    @SmallNumber2 var someNumber: Int
+}
+var someStructure = SomeStructure()
+someStructure.someNumber = 4
+someStructure.someNumber
+someStructure.$someNumber   // projected value
+
+someStructure.someNumber = 55
+someStructure.someNumber
+someStructure.$someNumber   // projected value
+someStructure.self
+
+//
+enum RectSize {
+    case small, large
+}
+
+struct SizedRectangle {
+    @SmallNumber2 var height: Int
+    @SmallNumber2 var width: Int
+    
+    mutating func resize(to size: RectSize) -> Bool {
+        switch size {
+        case .small:
+            height = 10
+            width = 20
+        case .large:
+            height = 100
+            width = 100
+        }
+        return $height || $width
+    }
+}
+
+var sizedRectangle = SizedRectangle()
+sizedRectangle.resize(to: .small)
+sizedRectangle.height
+sizedRectangle.$height
+sizedRectangle.width
+sizedRectangle.$width
+
+
+// GLOBAL AND LOCAL VARIABLES
+// no exercises
+
+
+// TYPE PROPS
+
+struct SomeTypePropStructure {
+    static var storedTypeProperty = "Some value."
+    static var computedTypeProperty: Int {
+        return 6
+    }
+}
+enum SomeEnumeration {
+    static var storedTypeProperty = "Some value."
+    static var computedTypeProperty: Int {
+        return 6
+    }
+}
+
+class SomeClass {
+    static var storedTypeProperty = "Some value."
+    static var computedTypeProperty: Int {
+        return 27
+    }
+    class var overrideableComputedTypeProperty: Int { // overridable by subclasses
+        return 107
+    }
+}
+
+
+SomeTypePropStructure.storedTypeProperty
+SomeTypePropStructure.storedTypeProperty = "Another value."
+SomeTypePropStructure.storedTypeProperty
+var some = SomeTypePropStructure()
+//some.storedTypeProperty // does NOT exist, is not an instance prop
+
+SomeEnumeration.computedTypeProperty
+SomeClass.computedTypeProperty
+
+
+struct AudioChannel {
+    static let thresholdLevel = 10
+    static var maxInputLevelForAllChannels = 0
+    var currentLevel: Int = 0 {
+        didSet {
+            if currentLevel > AudioChannel.thresholdLevel {
+                // cap audio level to threshold level
+                currentLevel = AudioChannel.thresholdLevel
+            }
+            if currentLevel > AudioChannel.maxInputLevelForAllChannels {
+                // store this as the new overall maximum
+                AudioChannel.maxInputLevelForAllChannels = currentLevel
+            }
+        }
+    }
+}
+
+var leftChannel = AudioChannel()
+var rightChannel = AudioChannel()
+
+leftChannel.currentLevel = 7
+leftChannel.currentLevel
+AudioChannel.maxInputLevelForAllChannels
+
+rightChannel.currentLevel = 11
+rightChannel.currentLevel
+AudioChannel.maxInputLevelForAllChannels
+

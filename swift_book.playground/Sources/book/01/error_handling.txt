@@ -1,0 +1,58 @@
+enum PrinterError: Error {
+    case OutOfPaper
+    case noToner
+    case onFire
+}
+enum GenericError: Error {
+    case error(String)
+}
+
+func send(job: Int, toPrinter printerName: String) throws -> String {
+    if printerName == "Never Has Toner" {
+        throw PrinterError.noToner
+    }
+    if printerName == "On fire" {
+        throw PrinterError.onFire
+    }
+    if printerName == "Broken" {
+        throw GenericError.error("unexpected error")
+    }
+    return "Job Sent \(job)"
+}
+
+do {
+    let printerResponse = try send(job: 1, toPrinter: "Broken")
+    print(printerResponse)
+} catch PrinterError.onFire {
+    print("printer on fire.") // Can I capture error here?
+} catch let printerError as PrinterError {
+    print("error: \(printerError)")
+} catch {
+    print(error)
+}
+
+
+
+//----------
+let printerSuccess = try? send(job: 1884, toPrinter: "Gutenberg")
+let printerFailure = try? send(job: 1885, toPrinter: "Never Has Toner")
+
+
+
+//----------
+var fridgeIsOpen = false
+let fridgeContent = ["milk", "eggs", "leftovers", "banana"]
+
+func fridgeContains(_ food: String) -> Bool {
+    fridgeIsOpen = true
+    defer {
+        print(fridgeIsOpen)
+        fridgeIsOpen = false
+        print(fridgeIsOpen)
+    }
+    
+    let result = fridgeContent.contains(food)
+    return result
+}
+fridgeContains("banana")
+

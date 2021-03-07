@@ -1,0 +1,100 @@
+
+//------------ MEMORY SAFETY
+
+
+// INSTANTANEOUS ACCESS
+
+func oneMore(than number: Int) -> Int {
+    return number + 1
+}
+
+var myNumber = 1
+myNumber = oneMore(than: myNumber)
+myNumber
+
+
+// LONG_TERM ACCESS
+
+// CONFLICTING ACCESS TO IN-OUT PARAM
+var stepSize = 1
+func increment(_ number: inout Int) {
+    number += stepSize
+}
+// overlap: number is writing, stepSize is reading
+// but both refer to same memory location
+//increment(&stepSize)      // will error
+
+// Solution
+// make explicit copy
+var copyOfStepSize = stepSize
+increment(&copyOfStepSize)
+// upddate original
+stepSize = copyOfStepSize
+
+
+func balance(_ x: inout Int, _ y: inout Int) {
+    let sum = x + y
+    x = sum / 2
+    y = sum - x
+}
+var playerOneScore = 42
+var playerTwoScore = 30
+balance(&playerOneScore, &playerTwoScore)
+//playerOneScore
+//playerTwoScore
+
+// conflict &playerOneScore: x, y multiple write calls on same location
+//balance(&playerOneScore, &playerOneScore)
+
+
+// CONFLICTING ACCESS TO SELF IN METHODS
+struct Player {
+    var name: String
+    var health: Int
+    var energy: Int
+    
+    static let maxHealth = 10
+    mutating func restoreHealth() {
+        health = Player.maxHealth
+    }
+}
+
+extension Player {
+    mutating func shareHealth(with teammate: inout Player) {
+        balance(&teammate.health, &health)
+    }
+}
+
+var oscar = Player(name: "Oscar", health: 10, energy: 10)
+var maria = Player(name: "health", health: 5, energy: 10)
+oscar.shareHealth(with: &maria)
+
+// Conflict
+// 1st mem access: teammate.health
+// 2nd mem access: &health (self)
+//oscar.shareHealth(with: &oscar)   // conflict
+
+
+// CONFLICTING ACCESS TO PROPS
+var playerInformation = (health: 10, energy: 20)
+// Conflict:
+// even different elements are still accessing memory (playerInformation tuple)
+//balance(&playerInformation.health, &playerInformation.energy)   //Conflict
+
+// Conflict:
+// different props of a struct area still same area of mem on write
+var holly = Player(name: "Holly", health: 10, energy: 10)
+//balance(&holly.health, &holly.energy)     // Conflict
+
+
+// Solution
+// local var makes sure overlapping access is safe
+// not memory access exclusive but consider memory safe by compiler
+func someFunction() {
+    var oscar = Player(name: "Oscar", health: 10, energy: 20)
+    balance(&oscar.health, &oscar.energy)
+    oscar.health
+    oscar.energy
+}
+someFunction()
+

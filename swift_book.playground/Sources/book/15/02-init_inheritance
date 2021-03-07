@@ -1,0 +1,106 @@
+
+//------------ CLASS INHERITANCE AND INITIALIZATION
+
+
+//override, super.init and super prop customization
+class Vehicle {
+    var numberOfWheels = 0
+    var description: String {
+        return "\(numberOfWheels) wheel(s)"
+    }
+}
+
+class Bicycle: Vehicle {
+    override init() {
+        super.init()
+        numberOfWheels = 2
+    }
+}
+
+let bicycle = Bicycle()
+bicycle.description
+
+// implicit super.init() call, when no super prop customization
+class Hoverboard: Vehicle {
+    var color: String
+    init(color: String) {
+        self.color = color
+        //super.init() implictly called here
+    }
+    override var description: String {
+        return "\(super.description) in a beautiful \(color)"
+    }
+}
+
+let hoverboard = Hoverboard(color: "silver")
+print("Hoverboard: \(hoverboard.description)")
+
+
+// DESIGNATED AND CONVENIENCE INITS
+
+class Food {
+    var name: String
+    init(name: String) {    // called on name: param
+        print("designated")
+        self.name = name
+    }
+    convenience init() {    // called on no name
+        print("convenience")
+        self.init(name: "[Unnamed]")
+    }
+}
+
+let namedMeat = Food(name: "Bacon")
+namedMeat.name
+
+let misteryMeat = Food()
+misteryMeat.name
+
+
+class RecipeIngredient: Food {
+    var quantity: Int
+    init(name: String, quantity: Int) { // called with name, quantity
+        self.quantity = quantity
+        super.init(name: name)
+    }
+    override convenience init(name: String) {   // when called with name
+        self.init(name: name, quantity: 1)
+    }
+}
+
+
+var ingredient = RecipeIngredient() // inherits convenience init() but self.init calls RecipeIngredient
+ingredient.name
+ingredient.quantity
+
+let oneMysteryItem = RecipeIngredient()
+let oneBacon = RecipeIngredient(name: "Bacon")
+let sixEggs = RecipeIngredient(name: "Eggs", quantity: 6)
+
+
+class ShoppingListItem: RecipeIngredient {
+    var purchased = false
+    var description: String {
+        var output = "\(quantity) x \(name)"
+        output += purchased ? " ✔" : " ✘"
+        return output
+    }
+}
+
+
+var breakfastList = [
+    ShoppingListItem(),
+    ShoppingListItem(name: "Bacon"),
+    ShoppingListItem(name: "Eggs", quantity: 6)
+]
+breakfastList[0].name
+breakfastList[0].name = "Orange Juice"
+breakfastList[0].purchased = true
+breakfastList[0].name
+breakfastList[0].purchased
+
+for item in breakfastList {
+    print(item.description)
+}
+
+

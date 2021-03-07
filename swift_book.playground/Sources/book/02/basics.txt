@@ -1,0 +1,149 @@
+let array: [Int] = [1, 2, 3]
+
+//array.append(5)
+
+var dict: [String:Int] = ["ok":100,"bad":200]
+dict["ok"] = 150
+dict
+
+
+var one, two: String, three: Double
+type(of: one)
+type(of: two)
+type(of: three)
+
+var int1 = UInt.min
+var int2 = UInt.max
+var int3 = Int.min
+var int4 = Int.max
+
+var int5 = UInt8.min
+var int6 = UInt8.max
+var int7 = Int8.min
+var int8 = Int8.max
+
+var int9 = Float.maximum(2, 2)
+int9 = 100.35780001
+var myVar: Int8
+//myVar = 8000 // overflows
+
+
+//------------ TYPE INFERENCE & COVERSION
+
+
+var firstNumer = 100
+var secondNumber = 100.1
+//var errorTotal = firstNumer + secondNumber // error Int + Double
+var totalTypeConversion = Double(firstNumer) + secondNumber
+var total = 3 + 100.1
+
+
+//------------ TUPLES
+
+
+let htt404Error = (404, "Not Found")
+let (statusCode, statusMessage) = htt404Error
+statusCode
+htt404Error.0
+statusMessage
+htt404Error.1
+
+let (justStatusCode, _) = htt404Error
+justStatusCode
+
+let apiError = (statusCode: 200, description: "OK")
+apiError.statusCode
+apiError.description
+
+
+//------------ OPTIONALS
+
+
+let possibleNumber = "123"
+let convertedNumber = Int(possibleNumber)
+type(of: convertedNumber)
+
+var serverResponseCode: Int? = 404
+type(of: serverResponseCode)
+
+
+//------------ OPTIONAL BINDING
+
+
+if let actualNumber = Int(possibleNumber) {
+    print("The string \(possibleNumber) has an integer value of \(actualNumber)")
+} else {
+    print("The string \(possibleNumber) could not be converted.")
+}
+
+
+if let firstNumber = Int("4"), let secondNumber = Int("42"), firstNumber < secondNumber && secondNumber < 100 {
+    print("\(firstNumber) < \(secondNumber) < 100")
+}
+
+
+//------------ IMPLICIT UNWRAPPING
+
+
+let possibleString: String? = "An optional strfing"
+let forcedOptional: String = possibleString!
+type(of: possibleString)
+type(of: possibleString!) // this unwraps it
+type(of: forcedOptional)
+
+
+
+let assumedString: String! = "An implicitly unwrapped optional string."
+let implicitString: String = assumedString // I can use type here and it becomes a non-optional
+type(of: implicitString)
+
+let optionalString2 = assumedString
+type(of: optionalString2)
+
+// vs
+
+let optionalString: String? = "An optional string."
+let implicitString2 = optionalString // i can't use type here, will give type mismatch String vs Sting?
+type(of: implicitString2)
+
+
+// binding an implicit unwrapped
+type(of: assumedString)
+if let definiteString = assumedString {
+    type(of: definiteString)
+}
+
+
+//------------ ERROR HANDLING
+
+
+enum SandwichError: Error {
+    case outOfCleanDishes
+    case missingIngredients
+}
+
+func makeSandwich() throws {
+    throw SandwichError.outOfCleanDishes
+    return
+}
+
+do {
+    try makeSandwich()
+    print("sandwich success!")
+} catch SandwichError.outOfCleanDishes {
+    print("no clean dishes, wash")
+} catch SandwichError.missingIngredients {
+    print("missing ingredient, buy")
+}
+
+
+
+//------------ ASSERTSIONS/PRECONDITIONS
+
+
+// Debug
+let age = 3
+assert(age >= 0, "A person's age can't be less than zero.")
+// Runtime
+var index = 1
+precondition(index > 0, "Index must be greater than zero.")

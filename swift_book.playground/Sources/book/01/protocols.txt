@@ -1,0 +1,71 @@
+protocol ExampleProtocol {
+    var simpleDescription: String { get }
+    var anotherSimpleProp: Int { get }
+    mutating func adjust()
+}
+
+class SimpleClass: ExampleProtocol {
+    var anotherSimpleProp: Int = 100
+    var simpleDescription: String = "A very simple class."
+    var anotherProperty: Int = 69105
+    func adjust() {
+        simpleDescription += " Now 100% adjusted."
+    }
+}
+
+var a = SimpleClass()
+a.adjust()
+let aDescription = a.simpleDescription
+
+
+struct SimpleStructure: ExampleProtocol {
+    var anotherSimpleProp: Int = 300
+    var simpleDescription: String = "A simple structure"
+    mutating func adjust() {
+        simpleDescription += " (adjusted)"
+    }
+}
+
+var b = SimpleStructure()
+b.adjust()
+let bDescription = b.simpleDescription
+
+
+//---------------
+
+protocol SimpleProtocol {
+    var simpleDescription: String { get }
+    mutating func adust()
+}
+
+extension Int: SimpleProtocol {
+    mutating func adust() {
+        self += 42
+    }
+    
+    var simpleDescription: String {
+        return "The number \(self)"
+    }
+}
+
+7.simpleDescription
+
+protocol AbsoluteProtocol {
+    var absoluteValue: String { get }
+}
+
+extension Double: AbsoluteProtocol {
+    var absoluteValue: String {
+        return "The absolute value is \(abs(self))"
+    }
+}
+
+(-7.0).absoluteValue
+
+
+//---------------
+
+let protocolValue: ExampleProtocol = a
+protocolValue.simpleDescription
+//protocolValue.anotherProperty // not part of protocol, but clas so not accesible
+a.anotherProperty

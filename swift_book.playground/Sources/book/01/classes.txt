@@ -1,0 +1,135 @@
+class NamedShape {
+    var numberOfSides: Int = 0
+    var name: String
+    let category: String = "planes"
+    
+    init(name: String) {
+        self.name = name
+    }
+    
+    func simpleDescriptor() -> String {
+        return "A shape with \(numberOfSides) side."
+    }
+}
+
+let namedShape = NamedShape(name: "rombhoid")
+namedShape.numberOfSides = 10
+print(namedShape.simpleDescriptor())
+
+
+class Square:NamedShape {
+    var sideLength: Double
+    
+    init(name: String, sideLength: Double) {
+        self.sideLength = sideLength
+        super.init(name: name)
+        numberOfSides = 4
+    }
+    
+    func area() -> Double {
+        return sideLength * sideLength
+    }
+    
+    override func simpleDescriptor() -> String {
+         return "A shape with \(numberOfSides) side, side lenght of \(sideLength) and area \(area())."
+    }
+}
+
+
+
+let square = Square(name: "my square", sideLength: 10.10)
+print(square.simpleDescriptor())
+
+
+class Circle:NamedShape {
+    var radius: Double
+    
+    init(name: String, radius: Double) {
+        self.radius = radius
+        super.init(name: name)
+    }
+    
+    func area() -> Double {
+        return 2 * Double.pi * radius
+    }
+    
+    override func simpleDescriptor() -> String {
+         return "A circle with radius \(radius) and area \(area())"
+    }
+}
+
+let circle = Circle(name: "my circle", radius: 1)
+print(circle.simpleDescriptor())
+
+
+class EquilateralTriangle: NamedShape {
+    var sideLength: Double = 0.0
+    
+    init(name: String, sideLength: Double) {
+        self.sideLength = sideLength
+        super.init(name: name)
+        numberOfSides = 3
+    }
+    
+    var perimeter: Double {
+        get {
+            return 3.0 * sideLength
+        }
+        set(newPermimeter) {
+            sideLength = newPermimeter / 3.0
+        }
+    }
+    
+    override func simpleDescriptor() -> String {
+        return "A simple \(name) of lenght \(sideLength) and permiter \(perimeter)"
+    }
+}
+
+let triangle = EquilateralTriangle(name: "my triangle", sideLength: 2)
+triangle.perimeter = 6
+//print(triangle.sideLength)
+print(triangle.simpleDescriptor())
+
+
+class TriangleAndSquare {
+    var triangle: EquilateralTriangle {
+        willSet {
+//            print("triangle",newValue.sideLength)
+            square.sideLength = newValue.sideLength
+        }
+    }
+    
+    var square: Square {
+        willSet {
+//            print("square",newValue.sideLength)
+            triangle.sideLength = newValue.sideLength
+        }
+    }
+    
+    init(size: Double, name: String) {
+        square = Square(name: name, sideLength: size)
+        triangle = EquilateralTriangle(name: name, sideLength: size)
+    }
+    
+}
+
+var triangleAndSquare = TriangleAndSquare(size: 10, name: "my trisquares")
+print(triangleAndSquare.square.sideLength)
+print(triangleAndSquare.triangle.sideLength)
+print(triangleAndSquare.square.name)
+print(triangleAndSquare.triangle.name)
+
+triangleAndSquare.square.sideLength = 20
+
+triangleAndSquare.triangle.sideLength = 50
+print(triangleAndSquare.square.sideLength)
+print(triangleAndSquare.triangle.sideLength)
+triangleAndSquare.square = Square(name: "my square", sideLength: 35)
+print(triangleAndSquare.square.sideLength)
+print(triangleAndSquare.triangle.sideLength)
+print(triangleAndSquare.square.name)
+print(triangleAndSquare.triangle.name)
+
+let newSquare: Square? = Square(name: "my square", sideLength: 35)
+let sideLength = newSquare?.sideLength
+

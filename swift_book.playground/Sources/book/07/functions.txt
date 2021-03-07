@@ -1,0 +1,216 @@
+//------------ FUNCTIONS
+
+
+func greet(person: String) -> String {
+    let greeting = "Hello, " + person + "!"
+    return greeting
+}
+
+func greetAgain(person: String) -> String {
+    return "Hello again, " + person + "!"
+}
+
+
+// FUNCTION WITH NO PARAMS
+func sayHelloWorld() -> String {
+    return "Hello World"
+}
+
+
+// FUNCTION WITH MULTIPLE PARAMS
+func greet(person: String, alreadyGreeted: Bool) -> String {
+    if alreadyGreeted {
+        return greetAgain(person: person)
+    } else {
+        return greet(person: person)
+    }
+}
+print(greet(person: "Tim", alreadyGreeted: true))
+
+
+// FUNC WITH NO RETURN VALUE
+func printGreet(person: String) {
+    print("Hello, \(person)!")
+}
+printGreet(person: "John")
+
+
+// FUNC WITH MULTI RETURNS
+func minMax(array: [Int]) -> (min: Int, max: Int) {
+    var currentMin = array[0]
+    var currentMax = array[0]
+    for value in array[1..<array.count] {
+//        print(value)
+        if value < currentMin {
+//            value
+            currentMin = value
+        } else if value > currentMax {
+//            value
+            currentMax = value
+        }
+    }
+    return (currentMin, currentMax)
+}
+minMax(array: [8, -6, 2, 109, 3, 71])
+
+func minMaxSafe(array: [Int]) -> (min: Int, max: Int)? {
+    if array.isEmpty { return nil }
+    var currentMin = array[0]
+    var currentMax = array[0]
+    for value in array[1..<array.count] {
+//        print(value)
+        if value < currentMin {
+//            value
+            currentMin = value
+        } else if value > currentMax {
+//            value
+            currentMax = value
+        }
+    }
+    return (currentMin, currentMax)
+}
+if let bounds = minMaxSafe(array: [8, -6, 2, 109, 3, 71]) {
+    print(bounds.min, bounds.max)
+}
+
+
+// FUNCTIONS WITH IMPLICIT RETURN
+func greeting(for person: String) -> String {
+    "hello \(person)"
+}
+greeting(for: "Anna")
+
+func anotherGreeting(for person: String) -> String {
+    return "hello \(person)"
+}
+anotherGreeting(for: "Anna")
+
+
+
+//------------ FUNC ARGUMENT LABELS & PARAMETER NAMES
+
+
+func someFunction(firstParameterName: Int, secondParameterName: Int) {
+    return
+}
+someFunction(firstParameterName: 1, secondParameterName: 2)
+
+
+// SPECIFYING ARGUMENT LABELS
+func someOtherFunction(firstArgLabel firstParameterName: Int, firstArgLabel secondParameterName: Int) {
+    return
+}
+someOtherFunction(firstArgLabel: 1, firstArgLabel: 2)
+
+
+func greet(person: String, from hometown: String) -> String {
+    return "Hello \(person)! Glad you you could visit \(hometown)"
+}
+greet(person: "Anna", from: "Spain")
+
+
+// OMITING ARGUMENT LABELS
+func anotherFunction(_ firstParameterName: Int, secondparameterName: Int) {
+    return
+}
+anotherFunction(1, secondparameterName: 2)
+
+
+// DEFAULT PARAM VALUES
+func someFunction(paramWithoutDefault: Int, paramWithDefault: Int = 12) -> (Int, Int) {
+    return (paramWithoutDefault, paramWithDefault)
+}
+
+someFunction(paramWithoutDefault: 1, paramWithDefault: 30)
+someFunction(paramWithoutDefault: 1)
+
+
+// VARAIDIC PARAMS
+func arithmeticMean(_ numbers: Double...) -> Double {
+    var total: Double = 0
+    for number in numbers {
+        total += number
+    }
+    return total / Double(numbers.count)
+}
+arithmeticMean(1, 2, 3, 4, 5)
+arithmeticMean(3, 8.25, 18.75)
+
+
+// IN-OUT PARAMS
+func swapTwoInts(_ a: inout Int, _ b: inout Int) {
+    let temporaryA = a
+    a = b
+    b = temporaryA
+}
+var someInt = 3
+var anotherInt = 107
+swapTwoInts(&someInt, &anotherInt)
+someInt
+anotherInt
+
+
+//------------ FUNCTION TYPES
+
+
+func addTwoInts(_ a: Int, _ b: Int) -> Int {
+    return a + b
+}
+func addMultiplyInts(_ a: Int, _ b: Int) -> Int {
+    return a * b
+}
+
+var mathFunction1: (Int, Int) -> Int = addTwoInts
+mathFunction1(1, 2)
+
+var mathFunction2: (Int, Int) -> Int = addMultiplyInts
+mathFunction2(2, 3)
+
+let anotherMathFunction = addTwoInts // inferred type
+
+
+// FUNC TYPES AS PARAMS
+func printMathResult(_ mathFunction: (Int, Int) -> Int, _ a: Int, _ b: Int) {
+    print("\(mathFunction(a, b))")
+}
+printMathResult(addTwoInts, 5, 5)
+
+
+// FUNC TYPES AS RETURN TYPES
+func stepForward(_ input: Int) -> Int {
+    print("forward")
+    return input + 1
+}
+
+func stepBackward(_ input: Int) -> Int {
+    print("back \(input - 1)")
+    return input - 1
+}
+
+func chooseStepFunction(backward: Bool) -> (Int) -> Int {
+    return backward ? stepBackward : stepForward
+}
+
+var currentValue = 3
+let moveNearerToZero = chooseStepFunction(backward: currentValue > 0)
+while currentValue != 0 {
+    print("\(currentValue)", terminator: ", ")
+    currentValue = moveNearerToZero(currentValue)
+}
+print("zero!")
+
+
+// NESTED FUNCTIONS
+func chooseStepFunctionNested(backward: Bool) -> (Int) -> Int {
+    func stepForward(input: Int) -> Int { return input + 1 }
+    func stepBackward(input: Int) -> Int { return input - 1 }
+    return backward ? stepBackward : stepForward
+}
+
+var currentValue2 = -4
+let moveNearZero = chooseStepFunctionNested(backward: currentValue2 > 0)
+while currentValue2 != 0 {
+    print("\(currentValue2)")
+    currentValue2 = moveNearZero(currentValue2)
+}
+print("zero!")
